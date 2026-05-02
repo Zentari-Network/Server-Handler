@@ -14,9 +14,9 @@ Made by Espryra, if you need to hit me up, reach me on discord! `espryra`
 ## Disclaimers
 
 - This tool requires the following:
-- A linux machine (Tested and made on Debian 13)
-- Docker installed, with buildx
-- Bun
+  - A linux machine (Tested and made on Debian 13)
+  - Docker installed, with buildx
+  - Bun
 
 ## How to Use
 
