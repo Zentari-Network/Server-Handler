@@ -1,0 +1,10 @@
+{
+  "permission_levels": {
+    "me": "internal",
+    "tell": "internal",
+    "msg": "internal",
+    "w": "internal",
+    "help": "internal",
+    "packstack": "internal"
+  }
+}

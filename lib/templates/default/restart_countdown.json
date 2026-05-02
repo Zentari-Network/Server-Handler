@@ -1,0 +1,38 @@
+[
+  {
+    "commands": ["say Server restarting in 60 seconds!"],
+    "delay": 30
+  },
+  {
+    "commands": ["say Server restarting in 30 seconds!"],
+    "delay": 15
+  },
+  {
+    "commands": ["say Server restarting in 15 seconds!"],
+    "delay": 10
+  },
+  {
+    "commands": ["say Server restarting in 5 seconds!"],
+    "delay": 1
+  },
+  {
+    "commands": ["say Server restarting in 4 seconds!"],
+    "delay": 1
+  },
+  {
+    "commands": ["say Server restarting in 3 seconds!"],
+    "delay": 1
+  },
+  {
+    "commands": ["say Server restarting in 2 seconds!"],
+    "delay": 1
+  },
+  {
+    "commands": ["say Server restarting in 1 second!"],
+    "delay": 1
+  },
+  {
+    "commands": ["kick @a Server restarting now!"],
+    "delay": 1
+  }
+]
