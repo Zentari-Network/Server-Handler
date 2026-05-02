@@ -39,6 +39,13 @@ export default {
             .setMinValue(1028)
             .setMaxValue(65535)
             .setRequired(true),
+        )
+        .addStringOption((option) =>
+          option
+            .setName("template")
+            .setDescription(
+              "The template you would like to use for this server.",
+            ),
         ),
     )
     .addSubcommand((subcommand) =>
@@ -645,12 +652,21 @@ async function createSkeleton(
   interaction: ChatInputCommandInteraction,
 ): Promise<void> {
   const name = interaction.options.getString("name", true);
+  const template = interaction.options.getString("template");
 
   if (name.includes(" ")) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
     interaction.editReply({
       content: "Server name cannot contain spaces!",
+    });
+    return;
+  }
+  if (template && !fs.existsSync(`lib/templates/${template}`)) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+    interaction.editReply({
+      content: "Invalid template!",
     });
     return;
   }
@@ -688,13 +704,17 @@ async function createSkeleton(
     return;
   }
 
+  const templatePath = template
+    ? `lib/templates/${template}`
+    : "lib/templates/default";
+
   fs.mkdirSync(`data/servers/${name}`);
   fs.mkdirSync(`data/servers/${name}/backups`);
   fs.cpSync(
-    "lib/templates/default/restart_countdown.json",
+    `${templatePath}/restart_countdown.json`,
     `data/servers/${name}/restart_countdown.json`,
   );
-  fs.cpSync("lib/templates/default/data", `data/servers/${name}/data`, {
+  fs.cpSync(`${templatePath}/data`, `data/servers/${name}/data`, {
     recursive: true,
   });
 
