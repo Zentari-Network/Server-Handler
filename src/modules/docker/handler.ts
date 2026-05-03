@@ -1,4 +1,4 @@
-import { exec, spawn } from "child_process";
+import { spawn } from "child_process";
 import * as fs from "fs";
 import path from "path";
 import ConfigHandler from "../../utils/config/handler";
@@ -256,14 +256,24 @@ export default class DockerHandler {
         }
 
         const logs: string[] = [];
-        const process = exec(`docker logs server_${server.id}`);
+        const process = spawn("docker", [
+          "logs",
+          "--tail",
+          "1000",
+          `server_${server.id}`,
+        ]);
 
-        process.stdout?.on("data", (data) => {
+        process.stdout?.on("data", (data: Buffer) => {
+          logs.push(data.toString());
+        });
+        process.stderr?.on("data", (data: Buffer) => {
           logs.push(data.toString());
         });
         process.once("exit", (code) => {
           if (code !== 0) {
-            Logger.Warn(`Failed to get logs for ${server.name}!`);
+            Logger.Warn(
+              `Failed to get logs for ${server.name}! | Code: ${code}`,
+            );
             return;
           }
 
