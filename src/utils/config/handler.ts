@@ -33,6 +33,20 @@ export default class ConfigHandler {
   public static AllowedRole(): string {
     return ConfigHandler.instance.allowed_role;
   }
+
+  public static APIEnabled(): boolean {
+    return ConfigHandler.instance.api_enabled;
+  }
+  public static APIPort(): number {
+    return ConfigHandler.instance.api_port;
+  }
+  public static APISecret(): string {
+    return ConfigHandler.instance.api_secret;
+  }
+  public static APIPortRange(): [number, number] {
+    return ConfigHandler.instance.api_port_range;
+  }
+
   public static LogUpdateSpeed(): number {
     return ConfigHandler.instance.log_update_speed;
   }

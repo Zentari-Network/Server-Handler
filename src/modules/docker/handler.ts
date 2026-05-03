@@ -176,7 +176,7 @@ export default class DockerHandler {
         });
       });
 
-    const [stats, ps] = await Promise.all([
+    const [stats, ps, ip] = await Promise.all([
       spawnStdout([
         "stats",
         `server_${id}`,
@@ -191,6 +191,12 @@ export default class DockerHandler {
         "--format",
         "{{.Status}}",
       ]),
+      spawnStdout([
+        "inspect",
+        `server_${id}`,
+        "--format",
+        "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+      ]),
     ]);
 
     if (!stats || !ps) return undefined;
@@ -198,7 +204,7 @@ export default class DockerHandler {
     const [rawCPU, rawMemory] = stats.split(",");
     const cpu = parseFloat(rawCPU!.replace("%", ""));
     const uptime = ps.trim();
-    const rawMem = rawMemory!.split("/")[0]!.trim(); // e.g. "512MiB" or "1.2GiB"
+    const rawMem = rawMemory!.split("/")[0]!.trim();
     const memValue = parseFloat(rawMem);
     const memUnit = rawMem.replace(/[\d.]/g, "").trim().toUpperCase();
     const memMultiplier: Record<string, number> = {
@@ -209,7 +215,42 @@ export default class DockerHandler {
     };
     const memory = memValue * (memMultiplier[memUnit] ?? 1024 ** 2);
 
-    return { cpu, memory, uptime };
+    return { cpu, memory, uptime, ip: ip! };
+  }
+  public static async GetAllContainersIPs(): Promise<Record<number, string>> {
+    const servers = DatabaseHandler.GetInstance()
+      .query("SELECT * FROM servers")
+      .all() as Server[];
+
+    const entries = await Promise.all(
+      servers.map(async (server) => {
+        const ip = await new Promise<string | undefined>((resolve) => {
+          const proc = spawn("docker", [
+            "inspect",
+            `server_${server.id}`,
+            "--format",
+            "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}",
+          ]);
+          let output = "";
+
+          proc.stdout?.on("data", (data) => (output += data.toString()));
+          proc.once("exit", (code) => {
+            if (code !== 0) {
+              Logger.Warn(`Failed to get IP for server ${server.id}!`);
+              resolve(undefined);
+            } else {
+              resolve(output.trim());
+            }
+          });
+        });
+
+        return ip ? ([server.id, ip] as [number, string]) : undefined;
+      }),
+    );
+
+    return Object.fromEntries(
+      entries.filter((entry): entry is [number, string] => entry !== undefined),
+    );
   }
 
   private async BuildImage(): Promise<void> {
@@ -274,6 +315,9 @@ export default class DockerHandler {
             Logger.Warn(
               `Failed to get logs for ${server.name}! | Code: ${code}`,
             );
+            return;
+          }
+          if (!fs.existsSync(`data/servers/${server.name}`)) {
             return;
           }
 

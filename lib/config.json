@@ -1,4 +1,10 @@
 {
-  "allowed_role": "1497870747161329665",
+  "allowed_role": "",
+
+  "api_enabled": false,
+  "api_port": 3000,
+  "api_secret": "CHANGE ME IF USED",
+  "api_port_range": [50000, 51000],
+
   "log_update_speed": 1
 }
