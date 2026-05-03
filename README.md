@@ -96,7 +96,7 @@ bun install -g pm2
 echo -e '#!/bin/bash\n\nbun start' > start.sh && chmod +x start.sh
 
 # Register it with PM2
-pm2 start --name handler ./start.sh
+bun x pm2 start --name handler ./start.sh
 ```
 
 ---
