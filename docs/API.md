@@ -100,13 +100,17 @@ Creates a new server from a template.
 | `port`      | `number`  | ❌       | UDP port for the server. Randomly assigned from `api_port_range` in config if omitted. |
 | `template`  | `string`  | ❌       | Template folder name under `lib/templates/`. Defaults to `default`.                    |
 | `autostart` | `boolean` | ❌       | Whether to start the server immediately after creation. Defaults to `false`.           |
+| `cpu_limit` | `number`  | ❌       | CPU thread limit for the container (e.g. `1` or `0.5`). Omit for no limit.             |
+| `ram_limit` | `number`  | ❌       | RAM limit in MB (e.g. `512` for 512 MB). Omit for no limit.                            |
 
 ```json
 {
   "name": "survival",
   "port": 19132,
   "template": "default",
-  "autostart": true
+  "autostart": true,
+  "cpu_limit": 1,
+  "ram_limit": 512
 }
 ```
 
@@ -406,15 +410,17 @@ Pushes a game server's runtime state (players and TPS) into the API cache. This 
 
 ### `Server`
 
-| Field              | Type             | Description                                          |
-| ------------------ | ---------------- | ---------------------------------------------------- |
-| `id`               | `number`         | Auto-incremented primary key                         |
-| `name`             | `string`         | Unique server name                                   |
-| `port`             | `number`         | UDP port                                             |
-| `backup_speed`     | `number \| null` | Backup interval in minutes. `null` disables backups. |
-| `backup_retention` | `number`         | Max number of unprotected backups to keep            |
-| `restart_times`    | `string`         | JSON-encoded array of `"HH:mm"` UTC times            |
-| `created_at`       | `string`         | ISO 8601 timestamp                                   |
+| Field              | Type             | Description                                                |
+| ------------------ | ---------------- | ---------------------------------------------------------- |
+| `id`               | `number`         | Auto-incremented primary key                               |
+| `name`             | `string`         | Unique server name                                         |
+| `port`             | `number`         | UDP port                                                   |
+| `backup_speed`     | `number \| null` | Backup interval in minutes. `null` disables backups.       |
+| `backup_retention` | `number`         | Max number of unprotected backups to keep                  |
+| `restart_times`    | `string`         | JSON-encoded array of `"HH:mm"` UTC times                  |
+| `cpu_limit`        | `number \| null` | CPU thread limit for the container. `null` means no limit. |
+| `ram_limit`        | `number \| null` | RAM limit in MB. `null` means no limit.                    |
+| `created_at`       | `string`         | ISO 8601 timestamp                                         |
 
 ### `Player`
 
