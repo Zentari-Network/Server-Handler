@@ -4,6 +4,8 @@ A self-hosted Bedrock Dedicated Server manager built on Docker, Discord.js, and 
 
 Made by **Espryra** — hit me up on Discord: `espryra`
 
+> **Recommended:** Install the [Server Handler Uploader BP](https://github.com/Zentari-Network/Server-Handler-BP) on each server managed by this handler. It allows your Minecraft servers to report their TPS and player count directly to the API.
+
 ---
 
 ## Features
