@@ -11,6 +11,8 @@ const DatabaseConstants = {
         "backup_speed INTEGER",
         "backup_retention INTEGER DEFAULT 6 NOT NULL",
         "restart_times TEXT DEFAULT '[]' NOT NULL",
+        "cpu_limit REAL",
+        "ram_limit INTEGER",
         "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL",
       ],
     },

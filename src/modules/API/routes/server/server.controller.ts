@@ -51,8 +51,15 @@ export default abstract class ServerController {
   }
   public static async CreateServer(req: Request, res: Response): Promise<void> {
     const { name, autostart }: CreateServerRequest = req.body;
-    let { port, template }: CreateServerRequest = req.body;
+    let { port, template, cpu_limit, ram_limit }: CreateServerRequest =
+      req.body;
 
+    if (cpu_limit) {
+      cpu_limit = parseFloat(cpu_limit.toFixed(2));
+    }
+    if (ram_limit) {
+      ram_limit = Math.floor(ram_limit);
+    }
     if (!name || name.includes(" ")) {
       res.status(400).json({
         error: "Invalid server name!",
@@ -106,8 +113,8 @@ export default abstract class ServerController {
     });
 
     const id = DatabaseHandler.GetInstance().run(
-      "INSERT INTO servers (name, port) VALUES (?, ?)",
-      [name, port],
+      "INSERT INTO servers (name, port, cpu_limit, ram_limit) VALUES (?, ?, ?, ?)",
+      [name, port, cpu_limit ?? null, ram_limit ?? null],
     ).lastInsertRowid;
 
     if (autostart) {

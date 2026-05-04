@@ -10,6 +10,8 @@ export interface Server {
   backup_speed: number; // in minutes
   backup_retention: number;
   restart_times: string;
+  cpu_limit: number;
+  ram_limit: number;
   created_at: string;
 }
 export interface Backup {

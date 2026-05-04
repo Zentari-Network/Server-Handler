@@ -47,6 +47,20 @@ export default {
             .setDescription(
               "The template you would like to use for this server.",
             ),
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("cpu_limit")
+            .setDescription(
+              "CPU limit for the server. This is in threads. Example: 1 or 0.5.",
+            ),
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("ram_limit")
+            .setDescription(
+              "The RAM limit for the server. This is in MB. Example: 512 for half a GB.",
+            ),
         ),
     )
     .addSubcommand((subcommand) =>
@@ -66,7 +80,7 @@ export default {
         .setName("stop")
         .setDescription("Stop a server.")
         .addStringOption((option) =>
-          option
+          option /*  */
             .setName("server")
             .setDescription("The name of the server.")
             .setAutocomplete(true)
@@ -172,6 +186,20 @@ export default {
             .setDescription(
               "The times to restart the server. Example, 00:00, 12:00. ALL TIMES ARE IN UTC!",
             ),
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("cpu_limit")
+            .setDescription(
+              "CPU limit for the server. This is in threads. Example: 1 or 0.5. Set to 0 for no limit.",
+            ),
+        )
+        .addNumberOption((option) =>
+          option
+            .setName("ram_limit")
+            .setDescription(
+              "The RAM limit for the server. This is in MB. Example: 512 for half a GB. Set to 0 for no limit.",
+            ),
         ),
     ),
   async callback(interaction) {
@@ -223,6 +251,26 @@ async function configServer(
   const backup_speed = interaction.options.getNumber("backup_speed");
   const backup_retention = interaction.options.getNumber("backup_retention");
   const restart_times = interaction.options.getString("restart_times");
+  let cpu_limit: number | undefined | null =
+    interaction.options.getNumber("cpu_limit") ?? undefined;
+  let ram_limit: number | undefined | null =
+    interaction.options.getNumber("ram_limit") ?? undefined;
+
+  if (cpu_limit) {
+    if (cpu_limit < 0) {
+      cpu_limit = null;
+    } else {
+      cpu_limit = parseFloat(cpu_limit.toFixed(2));
+    }
+  }
+  if (ram_limit) {
+    if (ram_limit < 0) {
+      ram_limit = null;
+    } else {
+      ram_limit = Math.floor(ram_limit);
+    }
+  }
+
   const servers = DatabaseHandler.GetInstance()
     .query("SELECT * FROM servers")
     .all() as Server[];
@@ -236,7 +284,14 @@ async function configServer(
     });
     return;
   }
-  if (!port && !backup_retention && !backup_speed && !restart_times) {
+  if (
+    !port &&
+    !backup_retention &&
+    !backup_speed &&
+    !restart_times &&
+    cpu_limit === undefined &&
+    ram_limit === undefined
+  ) {
     await interaction.deferReply();
 
     const restartTimes = (JSON.parse(server.restart_times) as string[]).map(
@@ -256,6 +311,8 @@ async function configServer(
         `💾 **Backup Speed:** ${!server.backup_speed ? "`Not Setup`" : `Every \`${server.backup_speed}\` minutes`}`,
         `📦 **Backup Retention:** \`${server.backup_retention}\` backups`,
         `🔁 **Restart Times:** ${restartTimes.length > 0 ? restartTimes.map((time) => `<t:${time}:t>`).join(", ") : "`No scheduled restarts`"}`,
+        `📈 **CPU Limit:** \`${!server.cpu_limit ? "N/A" : Math.floor(server.cpu_limit * 100) + "%"}\``,
+        `💾 **RAM Limit:** \`${!server.ram_limit ? "N/A" : Size.FormatSize(server.ram_limit * 1024 * 1024)}\``,
         `📅 **Created:** <t:${Math.floor(new Date(server.created_at).getTime() / 1000)}:D>`,
       ].join("\n"),
     });
@@ -297,12 +354,14 @@ async function configServer(
   await interaction.deferReply();
 
   DatabaseHandler.GetInstance().run(
-    "UPDATE servers SET port = ?, backup_speed = ?, backup_retention = ?, restart_times = ? WHERE id = ?",
+    "UPDATE servers SET port = ?, backup_speed = ?, backup_retention = ?, restart_times = ?, cpu_limit = ?, ram_limit = ? WHERE id = ?",
     [
       port ?? server.port,
       backup_speed ?? server.backup_speed,
       backup_retention ?? server.backup_retention,
       restart_times ? JSON.stringify(formattedTimes) : server.restart_times,
+      cpu_limit ?? server.cpu_limit,
+      ram_limit ?? server.ram_limit,
       server.id,
     ],
   );
@@ -389,6 +448,12 @@ async function listServers(
           const backups = BackupHandler.GetBackups(entry);
           const containerStats = stats[entry.id];
           const state = APICache.GetServerState(entry.id);
+          const CPULimit = !entry.cpu_limit
+            ? "∞"
+            : Math.floor(entry.cpu_limit * 100) + "%";
+          const RAMLimit = !entry.ram_limit
+            ? "∞"
+            : Size.FormatSize(entry.ram_limit * 1024 * 1024);
 
           return [
             `## ${entry.name}  \`(#${entry.id})\``,
@@ -398,8 +463,8 @@ async function listServers(
             "",
             "**📊 Performance**",
             `• **TPS**: \`${!isOnline ? "N/A" : (state?.tps ?? "N/A")}\``,
-            `• **CPU**: \`${!isOnline ? "N/A" : containerStats?.cpu + "%"}\``,
-            `• **Memory**: \`${!isOnline ? "N/A" : Size.FormatSize(!containerStats ? 0 : containerStats.memory)}\``,
+            `• **CPU**: \`${!isOnline ? "N/A" : containerStats?.cpu + "%"} / ${CPULimit}\``,
+            `• **Memory**: \`${!isOnline ? "N/A" : Size.FormatSize(!containerStats ? 0 : containerStats.memory)} / ${RAMLimit}\``,
             `• **Uptime**: \`${!isOnline ? "N/A" : containerStats?.uptime}\``,
 
             "",
@@ -655,6 +720,15 @@ async function createSkeleton(
 ): Promise<void> {
   const name = interaction.options.getString("name", true);
   const template = interaction.options.getString("template");
+  let CPULimit = interaction.options.getNumber("cpu_limit");
+  let RAMLimit = interaction.options.getNumber("ram_limit");
+
+  if (CPULimit) {
+    CPULimit = parseFloat(CPULimit.toFixed(2));
+  }
+  if (RAMLimit) {
+    RAMLimit = Math.floor(RAMLimit);
+  }
 
   if (name.includes(" ")) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -721,8 +795,8 @@ async function createSkeleton(
   });
 
   DatabaseHandler.GetInstance().run(
-    "INSERT INTO servers (name, port) VALUES (?, ?)",
-    [name, port],
+    "INSERT INTO servers (name, port, cpu_limit, ram_limit) VALUES (?, ?, ?, ?)",
+    [name, port, CPULimit ?? null, RAMLimit ?? null],
   );
 
   await interaction.deferReply();

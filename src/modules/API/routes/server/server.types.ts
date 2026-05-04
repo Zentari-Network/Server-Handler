@@ -26,4 +26,6 @@ export interface CreateServerRequest {
   port?: number;
   template?: string;
   autostart?: boolean;
+  cpu_limit?: number;
+  ram_limit?: number;
 }

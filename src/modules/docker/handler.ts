@@ -43,6 +43,8 @@ export default class DockerHandler {
       "--rm",
       "--name",
       `server_${id}`,
+      server.ram_limit ? ["--memory", `${server.ram_limit}m`] : undefined,
+      server.cpu_limit ? ["--cpus", `${server.cpu_limit}`] : undefined,
       "-p",
       `${server.port}:19132/udp`,
       "-v",
@@ -61,9 +63,13 @@ export default class DockerHandler {
       `${path.join(dataPath, "server.properties")}:/app/server.properties:rw`,
       "server:latest",
     ];
-    const proc = spawn("docker", args, {
-      stdio: "ignore",
-    });
+    const proc = spawn(
+      "docker",
+      args.flat().filter((entry) => entry !== undefined),
+      {
+        stdio: "ignore",
+      },
+    );
 
     return new Promise<boolean>((resolve) => {
       proc.once("exit", (code) => {
