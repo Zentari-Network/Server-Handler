@@ -127,7 +127,8 @@ Backups are `tar.gz` archives of each server's `data/` directory, stored at `dat
 - **Backup speed** — how often (in minutes) an automatic backup is created. `null` disables auto-backups.
 - **Retention** — how many unprotected backups to keep. Older ones are deleted automatically after each new backup.
 - **Protected backups** — flagged backups are excluded from retention deletion and must be managed manually.
-  Restoring a backup requires the server to be **offline** and will **replace all current server data**.
+
+Restoring a backup requires the server to be **offline** and will **replace all current server data**.
 
 ### Scheduled Restarts
 
@@ -154,7 +155,8 @@ When a server is created, its file structure is copied from a template folder un
 
 - `restart_countdown.json` — the countdown sequence for that server
 - `data/` — the initial server data directory (worlds, configs, packs, allowlist, permissions, server.properties)
-  To create a custom template, duplicate `lib/templates/default/` and modify as needed. Reference it by folder name when creating a server.
+
+To create a custom template, duplicate `lib/templates/default/` and modify as needed. Reference it by folder name when creating a server.
 
 ---
 
@@ -164,17 +166,17 @@ All commands require the `allowed_role` configured in `lib/config.json`.
 
 ### `/server`
 
-| Subcommand       | Description                                                                                                                    |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `createskeleton` | Creates a server directory and registers it. Args: `name` (required), `port` (required), `template` (optional)                 |
-| `start`          | Starts a server container                                                                                                      |
-| `stop`           | Stops a running server container                                                                                               |
-| `restart`        | Restarts a server (starts it if it was offline)                                                                                |
-| `execute`        | Runs a command inside a server container                                                                                       |
-| `delete`         | Permanently deletes a server and all its data. Requires typing `DELETE MY SERVER` to confirm                                   |
-| `list`           | Lists all servers with live status, performance stats, player count, and backup info                                           |
-| `log`            | Sends the Docker container's log output (last 1000 lines) as a file attachment                                                 |
-| `config`         | View or update a server's port, backup speed, backup retention, and restart times. Run with only `name` to view current config |
+| Subcommand       | Description                                                                                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createskeleton` | Creates a server directory and registers it. Args: `name` (required), `port` (required), `template` (optional), `cpu_limit` (optional, in threads e.g. `1` or `0.5`), `ram_limit` (optional, in MB e.g. `512`) |
+| `start`          | Starts a server container                                                                                                                                                                                      |
+| `stop`           | Stops a running server container                                                                                                                                                                               |
+| `restart`        | Restarts a server (starts it if it was offline)                                                                                                                                                                |
+| `execute`        | Runs a command inside a server container                                                                                                                                                                       |
+| `delete`         | Permanently deletes a server and all its data. Requires typing `DELETE MY SERVER` to confirm                                                                                                                   |
+| `list`           | Lists all servers with live status, performance stats, player count, and backup info                                                                                                                           |
+| `log`            | Sends the Docker container's log output (last 1000 lines) as a file attachment                                                                                                                                 |
+| `config`         | View or update a server's port, backup speed, backup retention, and restart times. Run with only `name` to view current config                                                                                 |
 
 ### `/backups`
 
