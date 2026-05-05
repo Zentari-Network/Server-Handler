@@ -114,7 +114,7 @@ When launched, modules initialize in this order:
 3. **DatabaseHandler** — Opens `data/database.db` (Bun SQLite) and creates tables if they don't exist
 4. **APIHandler** — Starts the Express REST API (if enabled in config)
 5. **BackupHandler** — Starts the per-minute backup polling loop
-6. **RestartHandler** — Starts the per-minute restart schedule loop
+6. **RestartHandler** — Starts the per-minute restart schedule loop and also handles auto reboot for servers that have it enabled.
 7. **DiscordHandler** — Loads and deploys slash commands, then logs the bot in
 8. **ExitHandler** — Registers SIGTERM/SIGINT listeners for graceful shutdown
 
@@ -178,7 +178,7 @@ All commands require the `allowed_role` configured in `lib/config.json`.
 | `delete`         | Permanently deletes a server and all its data. Requires typing `DELETE MY SERVER` to confirm                                                                                                                   |
 | `list`           | Lists all servers with live status, performance stats, player count, and backup info                                                                                                                           |
 | `log`            | Sends the Docker container's log output (last 1000 lines) as a file attachment                                                                                                                                 |
-| `config`         | View or update a server's port, backup speed, backup retention, and restart times. Run with only `name` to view current config                                                                                 |
+| `config`         | View or update a server's port, backup speed, backup retention, restart times, CPU and RAM limits, and auto reboot. Run with only `name` to view current config                                                |
 
 ### `/backups`
 

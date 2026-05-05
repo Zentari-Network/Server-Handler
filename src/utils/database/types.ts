@@ -12,6 +12,7 @@ export interface Server {
   restart_times: string;
   cpu_limit: number;
   ram_limit: number;
+  auto_reboot: boolean;
   created_at: string;
 }
 export interface Backup {

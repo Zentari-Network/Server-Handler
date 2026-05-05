@@ -13,6 +13,7 @@ const DatabaseConstants = {
         "restart_times TEXT DEFAULT '[]' NOT NULL",
         "cpu_limit REAL",
         "ram_limit INTEGER",
+        "auto_reboot BOOLEAN DEFAULT false NOT NULL",
         "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL",
       ],
     },

@@ -200,6 +200,13 @@ export default {
             .setDescription(
               "The RAM limit for the server. This is in MB. Example: 512 for half a GB. Set to 0 for no limit.",
             ),
+        )
+        .addBooleanOption((option) =>
+          option
+            .setName("auto_reboot")
+            .setDescription(
+              "Whether to auto reboot the server when it turns off or crashes.",
+            ),
         ),
     ),
   async callback(interaction) {
@@ -251,6 +258,7 @@ async function configServer(
   const backup_speed = interaction.options.getNumber("backup_speed");
   const backup_retention = interaction.options.getNumber("backup_retention");
   const restart_times = interaction.options.getString("restart_times");
+  const auto_reboot = interaction.options.getBoolean("auto_reboot");
   let cpu_limit: number | undefined | null =
     interaction.options.getNumber("cpu_limit") ?? undefined;
   let ram_limit: number | undefined | null =
@@ -289,6 +297,7 @@ async function configServer(
     !backup_retention &&
     !backup_speed &&
     !restart_times &&
+    auto_reboot === null &&
     cpu_limit === undefined &&
     ram_limit === undefined
   ) {
@@ -313,6 +322,7 @@ async function configServer(
         `🔁 **Restart Times:** ${restartTimes.length > 0 ? restartTimes.map((time) => `<t:${time}:t>`).join(", ") : "`No scheduled restarts`"}`,
         `📈 **CPU Limit:** \`${!server.cpu_limit ? "N/A" : Math.floor(server.cpu_limit * 100) + "%"}\``,
         `💾 **RAM Limit:** \`${!server.ram_limit ? "N/A" : Size.FormatSize(server.ram_limit * 1024 * 1024)}\``,
+        `🔁 **Auto Reboot:** \`${server.auto_reboot ? "Enabled" : "Disabled"}\``,
         `📅 **Created:** <t:${Math.floor(new Date(server.created_at).getTime() / 1000)}:D>`,
       ].join("\n"),
     });
@@ -354,7 +364,7 @@ async function configServer(
   await interaction.deferReply();
 
   DatabaseHandler.GetInstance().run(
-    "UPDATE servers SET port = ?, backup_speed = ?, backup_retention = ?, restart_times = ?, cpu_limit = ?, ram_limit = ? WHERE id = ?",
+    "UPDATE servers SET port = ?, backup_speed = ?, backup_retention = ?, restart_times = ?, cpu_limit = ?, ram_limit = ?, auto_reboot = ? WHERE id = ?",
     [
       port ?? server.port,
       backup_speed ?? server.backup_speed,
@@ -362,6 +372,7 @@ async function configServer(
       restart_times ? JSON.stringify(formattedTimes) : server.restart_times,
       cpu_limit ?? server.cpu_limit,
       ram_limit ?? server.ram_limit,
+      auto_reboot === null ? server.auto_reboot : auto_reboot,
       server.id,
     ],
   );

@@ -29,6 +29,9 @@ Returns all servers.
     "backup_speed": 60,
     "backup_retention": 5,
     "restart_times": "[\"00:00\",\"12:00\"]",
+    "cpu_limit": 1,
+    "ram_limit": 512,
+    "auto_reboot": false,
     "created_at": "2025-01-01T00:00:00.000Z"
   }
 ]
@@ -56,6 +59,9 @@ Returns a single server by ID.
   "backup_speed": 60,
   "backup_retention": 5,
   "restart_times": "[\"00:00\",\"12:00\"]",
+  "cpu_limit": 1,
+  "ram_limit": 512,
+  "auto_reboot": false,
   "created_at": "2025-01-01T00:00:00.000Z"
 }
 ```
@@ -421,6 +427,7 @@ Pushes a game server's runtime state (players and TPS) into the API cache. This 
 | `cpu_limit`        | `number \| null` | CPU thread limit for the container. `null` means no limit. |
 | `ram_limit`        | `number \| null` | RAM limit in MB. `null` means no limit.                    |
 | `created_at`       | `string`         | ISO 8601 timestamp                                         |
+| `auto_reboot`      | `boolean`        | Whether not the server reboots automatically if stopped.   |
 
 ### `Player`
 

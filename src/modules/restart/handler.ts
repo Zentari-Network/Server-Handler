@@ -9,10 +9,11 @@ import type { RestartCountdown } from "./types";
 
 export default class RestartHandler {
   public constructor() {
-    this.RestartLoop();
+    this.TimedRestartLoop();
+    this.AutoRebootLoop();
   }
 
-  private RestartLoop(): void {
+  private TimedRestartLoop(): void {
     Logger.Info("Restart handler running...");
 
     setInterval(() => {
@@ -44,6 +45,24 @@ export default class RestartHandler {
         }
       });
     }, 1000 * 60);
+  }
+  private AutoRebootLoop(): void {
+    setInterval(() => {
+      const servers = DatabaseHandler.GetInstance()
+        .query("SELECT * FROM servers")
+        .all() as Server[];
+
+      servers.forEach(async (server) => {
+        if (!server.auto_reboot) {
+          return;
+        }
+        if (await DockerHandler.IsOnline(server.id)) {
+          return;
+        }
+
+        DockerHandler.StartServer(server.id);
+      });
+    }, 1000 * 5);
   }
 
   private async RestartServer(server: Server): Promise<void> {
