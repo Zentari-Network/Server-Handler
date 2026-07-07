@@ -57,40 +57,4 @@ export default class ConfigHandler {
   public static DiscordToken(): string {
     return ConfigHandler.instance.discord_token;
   }
-
-  public static async ServerInstallLink(): Promise<string> {
-    const res = await fetch(
-      "https://minecraft.wiki/w/Bedrock_Dedicated_Server",
-      {
-        headers: { "User-Agent": "mcbe-server-manager/1.0" },
-      },
-    );
-    const text = await res.text();
-    const matches = [
-      ...text.matchAll(
-        /bin-linux\/bedrock-server-([\d]+\.[\d]+\.[\d]+\.[\d]+)\.zip/g,
-      ),
-    ];
-
-    if (!matches.length) {
-      Logger.Fatal("Could not find latest bedrock software version!");
-    }
-
-    const versions = matches.map((m) => m[1]);
-
-    versions.sort((a, b) => {
-      const ap = a!.split(".").map(Number);
-      const bp = b!.split(".").map(Number);
-
-      for (let i = 0; i < 4; i++) {
-        if (ap[i] !== bp[i]) return ap[i]! - bp[i]!;
-      }
-
-      return 0;
-    });
-
-    const latest = versions[versions.length - 1];
-
-    return `https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-${latest}.zip`;
-  }
 }

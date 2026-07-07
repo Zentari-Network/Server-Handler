@@ -37,6 +37,13 @@ export default class DockerHandler {
       server.name,
       "data",
     );
+    const pluginsPath = path.join(
+      process.cwd(),
+      "data",
+      "servers",
+      server.name,
+      "plugins",
+    );
     const args = [
       "run",
       "-d",
@@ -48,19 +55,9 @@ export default class DockerHandler {
       "-p",
       `${server.port}:19132/udp`,
       "-v",
-      `${path.join(dataPath, "config")}:/app/config:rw`,
+      `${pluginsPath}:/plugins:rw`,
       "-v",
-      `${path.join(dataPath, "development_behavior_packs")}:/app/development_behavior_packs:rw`,
-      "-v",
-      `${path.join(dataPath, "development_resource_packs")}:/app/development_resource_packs:rw`,
-      "-v",
-      `${path.join(dataPath, "worlds")}:/app/worlds:rw`,
-      "-v",
-      `${path.join(dataPath, "allowlist.json")}:/app/allowlist.json:rw`,
-      "-v",
-      `${path.join(dataPath, "permissions.json")}:/app/permissions.json:rw`,
-      "-v",
-      `${path.join(dataPath, "server.properties")}:/app/server.properties:rw`,
+      `${dataPath}:/data:rw`,
       "server:latest",
     ];
     const proc = spawn(
@@ -262,7 +259,7 @@ export default class DockerHandler {
   private async BuildImage(): Promise<void> {
     Logger.Info("Building Docker image, this may take a while...");
 
-    const args = `build --build-arg INSTALL_LINK=${await ConfigHandler.ServerInstallLink()} -t server:latest .`;
+    const args = `build -t server:latest .`;
     const process = spawn("docker", args.split(" "), {
       stdio: "ignore",
       cwd: "images/server",

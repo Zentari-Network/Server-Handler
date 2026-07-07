@@ -30,9 +30,5 @@
   {
     "commands": ["say Server restarting in 1 second!"],
     "delay": 1
-  },
-  {
-    "commands": ["kick @a Server restarting now!"],
-    "delay": 1
   }
 ]

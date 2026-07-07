@@ -9,7 +9,6 @@ import path from "path";
 import DatabaseHandler from "../../../utils/database/handler";
 import type { Server } from "../../../utils/database/types";
 import Size from "../../../utils/size";
-import APICache from "../../API/cache";
 import BackupHandler from "../../backup/handler";
 import DockerHandler from "../../docker/handler";
 import type { ContainerStats } from "../../docker/types";
@@ -458,7 +457,6 @@ async function listServers(
           const isOnline = online[entry.id] === true;
           const backups = BackupHandler.GetBackups(entry);
           const containerStats = stats[entry.id];
-          const state = APICache.GetServerState(entry.id);
           const CPULimit = !entry.cpu_limit
             ? "∞"
             : Math.floor(entry.cpu_limit * 100) + "%";
@@ -473,14 +471,9 @@ async function listServers(
 
             "",
             "**📊 Performance**",
-            `• **TPS**: \`${!isOnline ? "N/A" : (state?.tps ?? "N/A")}\``,
             `• **CPU**: \`${!isOnline ? "N/A" : containerStats?.cpu + "%"} / ${CPULimit}\``,
             `• **Memory**: \`${!isOnline ? "N/A" : Size.FormatSize(!containerStats ? 0 : containerStats.memory)} / ${RAMLimit}\``,
             `• **Uptime**: \`${!isOnline ? "N/A" : containerStats?.uptime}\``,
-
-            "",
-            "**👥 Players**",
-            `• **Online**: \`${!isOnline ? "N/A" : (state?.players.length ?? "N/A")}\``,
 
             "",
             "**💾 Storage & Backups**",
@@ -802,6 +795,9 @@ async function createSkeleton(
     `data/servers/${name}/restart_countdown.json`,
   );
   fs.cpSync(`${templatePath}/data`, `data/servers/${name}/data`, {
+    recursive: true,
+  });
+  fs.cpSync(`${templatePath}/plugins`, `data/servers/${name}/plugins`, {
     recursive: true,
   });
 

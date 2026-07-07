@@ -4,51 +4,9 @@ import DatabaseHandler from "../../../../utils/database/handler";
 import type { Server } from "../../../../utils/database/types";
 import Network from "../../../../utils/network";
 import DockerHandler from "../../../docker/handler";
-import APICache from "../../cache";
-import type {
-  CreateServerRequest,
-  ServerState,
-  UpdateServerStateRequest,
-} from "./server.types";
+import type { CreateServerRequest, ServerState } from "./server.types";
 
 export default abstract class ServerController {
-  public static async UpdateServerState(
-    req: Request,
-    res: Response,
-  ): Promise<void> {
-    const id = parseInt(req.params.id as string);
-    const { players, tps }: UpdateServerStateRequest = req.body;
-
-    if (isNaN(id)) {
-      res.status(400).json({
-        error: "Invalid server ID!",
-      });
-      return;
-    }
-    if (!Array.isArray(players) || isNaN(tps)) {
-      res.status(400).json({
-        error: "Invalid server state!",
-      });
-      return;
-    }
-
-    const server = DatabaseHandler.GetInstance()
-      .query("SELECT * FROM servers WHERE id = ?")
-      .get(id) as Server;
-
-    if (!server) {
-      res.status(404).json({
-        error: "Server not found!",
-      });
-      return;
-    }
-
-    APICache.UpdateServerState(id, { players, tps });
-
-    res.json({
-      message: "Server state updated successfully!",
-    });
-  }
   public static async CreateServer(req: Request, res: Response): Promise<void> {
     const { name, autostart }: CreateServerRequest = req.body;
     let { port, template, cpu_limit, ram_limit }: CreateServerRequest =
@@ -111,6 +69,10 @@ export default abstract class ServerController {
     fs.cpSync(`lib/templates/${template}/data`, `data/servers/${name}/data`, {
       recursive: true,
     });
+    fs.cpSync(
+      `lib/templates/${template}/plugins`,
+      `data/servers/${name}/plugins`,
+    );
 
     const id = DatabaseHandler.GetInstance().run(
       "INSERT INTO servers (name, port, cpu_limit, ram_limit) VALUES (?, ?, ?, ?)",
@@ -351,15 +313,11 @@ export default abstract class ServerController {
           };
         }
 
-        const state = APICache.GetServerState(server.id);
-
         return {
           id: server.id,
           online: true,
-          tps: state?.tps ?? 0,
           cpu: stats.cpu,
           memory: stats.memory,
-          players: state?.players ?? [],
           uptime: stats.uptime,
         };
       }),
@@ -411,15 +369,11 @@ export default abstract class ServerController {
       return;
     }
 
-    const state = APICache.GetServerState(server.id);
-
     res.json({
       id: server.id,
       online: true,
-      tps: state?.tps ?? 0,
       cpu: stats.cpu,
       memory: stats.memory,
-      players: state?.players ?? [],
       uptime: stats.uptime,
     });
   }

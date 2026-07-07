@@ -3,7 +3,6 @@ import ServerController from "./server.controller";
 
 const ServerRoute = Router();
 
-ServerRoute.post("/states/:id", ServerController.UpdateServerState);
 ServerRoute.post("/create", ServerController.CreateServer);
 ServerRoute.post("/:id/delete", ServerController.DeleteServer);
 ServerRoute.post("/:id/start", ServerController.StartServer);

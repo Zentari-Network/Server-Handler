@@ -1,18 +1,11 @@
-FROM debian:trixie-slim
+FROM ghcr.io/pmmp/pocketmine-mp:latest
 
-WORKDIR /app
+EXPOSE 19132/udp
+VOLUME [ "/data", "/plugins" ]
+USER root
 
-ARG INSTALL_LINK
+COPY ./resources/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh \
+  && mkfifo /tmp/cmd
 
-RUN apt update && apt install -y \
-  wget \
-  unzip \
-  libcurl4
-
-RUN wget -O server.zip $INSTALL_LINK && \
-  unzip server.zip && \
-  rm server.zip
-
-RUN mkfifo /tmp/cmd
-
-CMD ["sh", "-c", "tail -f /tmp/cmd | ./bedrock_server"]
+ENTRYPOINT ["/entrypoint.sh"]
