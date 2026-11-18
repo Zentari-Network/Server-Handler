@@ -47,6 +47,8 @@ export default class DockerHandler {
       server.cpu_limit ? ["--cpus", `${server.cpu_limit}`] : undefined,
       "-p",
       `${server.port}:19132/udp`,
+      "-p",
+      `${server.port}:19132/tcp`,
       "-v",
       `${path.join(dataPath, "config")}:/app/config:rw`,
       "-v",
