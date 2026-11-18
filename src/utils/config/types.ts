@@ -13,3 +13,12 @@ export interface RawConfig {
   discord_id: string;
   discord_token: string;
 }
+
+export interface InstallerResponse {
+  result: {
+    links: {
+      downloadType: string;
+      downloadUrl: string;
+    }[];
+  };
+}

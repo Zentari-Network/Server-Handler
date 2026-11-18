@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import Logger from "../logger";
-import type { RawConfig } from "./types";
+import type { InstallerResponse, RawConfig } from "./types";
 
 export default class ConfigHandler {
   private static instance: RawConfig;
@@ -60,37 +60,22 @@ export default class ConfigHandler {
 
   public static async ServerInstallLink(): Promise<string> {
     const res = await fetch(
-      "https://minecraft.wiki/w/Bedrock_Dedicated_Server",
-      {
-        headers: { "User-Agent": "mcbe-server-manager/1.0" },
-      },
+      "https://net-secondary.web.minecraft-services.net/api/v1.0/download/links",
     );
-    const text = await res.text();
-    const matches = [
-      ...text.matchAll(
-        /bin-linux\/bedrock-server-([\d]+\.[\d]+\.[\d]+\.[\d]+)\.zip/g,
-      ),
-    ];
 
-    if (!matches.length) {
-      Logger.Fatal("Could not find latest bedrock software version!");
+    if (!res.ok) {
+      throw new Error(`Failed to fetch Bedrock versions: ${res.status}`);
     }
 
-    const versions = matches.map((m) => m[1]);
+    const data = (await res.json()) as InstallerResponse;
+    const latest = data.result.links.find(
+      (link) => link.downloadType === "serverBedrockLinux",
+    );
 
-    versions.sort((a, b) => {
-      const ap = a!.split(".").map(Number);
-      const bp = b!.split(".").map(Number);
+    if (!latest) {
+      throw new Error("Could not find latest Bedrock software version!");
+    }
 
-      for (let i = 0; i < 4; i++) {
-        if (ap[i] !== bp[i]) return ap[i]! - bp[i]!;
-      }
-
-      return 0;
-    });
-
-    const latest = versions[versions.length - 1];
-
-    return `https://www.minecraft.net/bedrockdedicatedserver/bin-linux/bedrock-server-${latest}.zip`;
+    return latest.downloadUrl;
   }
 }
